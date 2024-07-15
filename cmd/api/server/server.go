@@ -10,9 +10,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/qori-aziz-kyc/wallet-backend/internal/config"
 	"github.com/qori-aziz-kyc/wallet-backend/internal/http/routes"
-
-	"github.com/gin-gonic/gin"
+	"github.com/qori-aziz-kyc/wallet-backend/library/jwt"
+	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type App struct {
@@ -20,27 +23,30 @@ type App struct {
 }
 
 func NewApp() (*App, error) {
-	// setup databases
-	// conn, err := utils.SetupPostgresConnection()
-	// if err != nil {
-	// 	return nil, err
-	// }
 
-	// setup router
-	router := setupRouter()
+	err := config.InitConfig()
+	if err != nil {
+		panic(err)
+	}
 
-	// // jwt service
-	// jwtService := jwt.NewJWTService(config.AppConfig.JWTSecret, config.AppConfig.JWTIssuer, config.AppConfig.JWTExpired)
+	dbUser := viper.Get("database.user")
+	dbPass := viper.Get("database.pass")
+	dbHost := viper.Get("database.host")
+	dbPort := viper.Get("database.port")
+	dbName := viper.Get("database.name")
 
-	// // cache
-	// redisCache := caches.NewRedisCache(config.AppConfig.REDISHost, 0, config.AppConfig.REDISPassword, time.Duration(config.AppConfig.REDISExpired))
-	// ristrettoCache, err := caches.NewRistrettoCache()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	//setup database
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbPort, dbName)
+	_, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
 
-	// // mailer
-	// mailerService := mailer.NewOTPMailer(config.AppConfig.OTPEmail, config.AppConfig.OTPPassword)
+	// jwt service
+	secretKey := viper.Get("jwt.secret").(string)
+	issuer := viper.Get("jwt.issuer").(string)
+	expired := viper.Get("jwt.expired").(int)
+	jwtService := jwt.NewJWTService(secretKey, issuer, expired)
 
 	// // user middleware
 	// // user with valid basic token can access endpoint
@@ -51,8 +57,10 @@ func NewApp() (*App, error) {
 	// _ = middlewares.NewAuthMiddleware(jwtService, true)
 
 	// API Routes
-	api := router.Group("api")
-	api.GET("/", routes.RootHandler)
+	// api := router.Group("api")
+	// api.GET("/", routes.RootHandler)
+	// // setup router
+	router := routes.SetupRouter(jwtService)
 	// routes.NewUsersRoute(api, conn, jwtService, redisCache, ristrettoCache, authMiddleware, mailerService).Routes()
 
 	// we can add web pages if needed
@@ -60,7 +68,7 @@ func NewApp() (*App, error) {
 	// ...
 
 	server := &http.Server{
-		Addr:           fmt.Sprintf(":%d", 8080),
+		Addr:           fmt.Sprintf(":%d", viper.Get("server.port")),
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -72,29 +80,10 @@ func NewApp() (*App, error) {
 	}, nil
 }
 
-func setupRouter() *gin.Engine {
-	// set the runtime mode
-	var mode = gin.ReleaseMode
-	// if config.AppConfig.Debug {
-	// 	mode = gin.DebugMode
-	// }
-	gin.SetMode(mode)
-
-	// create a new router instance
-	router := gin.New()
-
-	// set up middlewares
-	// router.Use(middlewares.CORSMiddleware())
-	// router.Use(gin.LoggerWithFormatter(logger.HTTPLogger))
-	router.Use(gin.Recovery())
-
-	return router
-}
-
 func (a *App) Run() (err error) {
 	// Gracefull Shutdown
 	go func() {
-		fmt.Println("success to listen and serve on :%d", 8080)
+		fmt.Printf("success to listen and serve on :%d", 8080)
 		if err := a.HttpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Failed to listen and serve: %+v", err)
 		}
