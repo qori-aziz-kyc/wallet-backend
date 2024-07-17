@@ -4,18 +4,19 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	roothandler "github.com/qori-aziz-kyc/wallet-backend/internal/http/handlers/rootHandler"
+	"github.com/qori-aziz-kyc/wallet-backend/internal/http/handlers/roothandler"
 	"github.com/qori-aziz-kyc/wallet-backend/internal/http/middlewares"
 	"github.com/qori-aziz-kyc/wallet-backend/internal/injection"
-	"github.com/qori-aziz-kyc/wallet-backend/library/jwt"
+	"github.com/qori-aziz-kyc/wallet-backend/internal/library/jwt"
+	"gorm.io/gorm"
 )
 
-func SetupRouter(jwt jwt.JWTService) *gin.Engine {
+func SetupRouter(jwt jwt.JWTService, db *gorm.DB) *gin.Engine {
 	// set the runtime mode
 	var mode = gin.ReleaseMode
 	gin.SetMode(mode)
 
-	handler := injection.NewInitialInjection(jwt)
+	handler := injection.NewInitialInjection(jwt, db)
 
 	// create a new router instance
 	router := gin.New()
@@ -30,7 +31,9 @@ func SetupRouter(jwt jwt.JWTService) *gin.Engine {
 
 	{
 		categoryAPI := api.Group("categories")
+		categoryAPI.GET("/", handler.Category.FindHandler)
 		categoryAPI.POST("/", handler.Category.CreateHandler)
+		categoryAPI.PUT("/:id", handler.Category.UpdateHandler)
 	}
 
 	for _, item := range router.Routes() {

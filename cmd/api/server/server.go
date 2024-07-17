@@ -12,7 +12,7 @@ import (
 
 	"github.com/qori-aziz-kyc/wallet-backend/internal/config"
 	"github.com/qori-aziz-kyc/wallet-backend/internal/http/routes"
-	"github.com/qori-aziz-kyc/wallet-backend/library/jwt"
+	"github.com/qori-aziz-kyc/wallet-backend/internal/library/jwt"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -37,7 +37,7 @@ func NewApp() (*App, error) {
 
 	//setup database
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbPort, dbName)
-	_, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +60,7 @@ func NewApp() (*App, error) {
 	// api := router.Group("api")
 	// api.GET("/", routes.RootHandler)
 	// // setup router
-	router := routes.SetupRouter(jwtService)
+	router := routes.SetupRouter(jwtService, db)
 	// routes.NewUsersRoute(api, conn, jwtService, redisCache, ristrettoCache, authMiddleware, mailerService).Routes()
 
 	// we can add web pages if needed

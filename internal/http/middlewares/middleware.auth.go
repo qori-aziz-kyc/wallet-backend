@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/qori-aziz-kyc/wallet-backend/internal/constants"
-	"github.com/qori-aziz-kyc/wallet-backend/library/helper"
-	"github.com/qori-aziz-kyc/wallet-backend/library/jwt"
+	"github.com/qori-aziz-kyc/wallet-backend/internal/library/helper"
+	"github.com/qori-aziz-kyc/wallet-backend/internal/library/jwt"
 )
 
 type AuthMiddleware struct {
