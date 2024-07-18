@@ -29,11 +29,31 @@ func SetupRouter(jwt jwt.JWTService, db *gorm.DB) *gin.Engine {
 	api := router.Group("api")
 	api.GET("/", roothandler.RootHandler)
 
+	adminMiddlerware := middlewares.NewAuthMiddleware(jwt, true)
+	userMiddlerware := middlewares.NewAuthMiddleware(jwt, false)
+
 	{
-		categoryAPI := api.Group("categories")
-		categoryAPI.GET("/", handler.Category.FindHandler)
-		categoryAPI.POST("/", handler.Category.CreateHandler)
-		categoryAPI.PUT("/:id", handler.Category.UpdateHandler)
+		api.POST("register", handler.User.RegisterHandler)
+		api.POST("login", handler.User.LoginHandler)
+	}
+
+	{
+		categoryAdminAPI := api.Group("categories")
+		categoryAdminAPI.Use(adminMiddlerware)
+		categoryAdminAPI.POST("/", handler.Category.CreateHandler)
+		categoryAdminAPI.PUT("/:id", handler.Category.UpdateHandler)
+
+		categoryUserAPI := api.Group("categories")
+		categoryUserAPI.Use(userMiddlerware)
+		categoryUserAPI.GET("/", handler.Category.FindHandler)
+	}
+
+	{
+		recordAPI := api.Group("records")
+		recordAPI.Use(userMiddlerware)
+		recordAPI.POST("/", handler.Record.CreateHandler)
+		recordAPI.PUT("/:id", handler.Record.UpdateHandler)
+		recordAPI.GET("/", handler.Record.FindHandler)
 	}
 
 	for _, item := range router.Routes() {

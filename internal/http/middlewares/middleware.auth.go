@@ -35,7 +35,7 @@ func (m *AuthMiddleware) Handle(ctx *gin.Context) {
 	}
 
 	if headerParts[0] != "Bearer" {
-		helper.NewAbortResponse(ctx, "token must content bearer")
+		helper.NewAbortResponse(ctx, "token must content Bearer")
 		return
 	}
 
@@ -45,11 +45,11 @@ func (m *AuthMiddleware) Handle(ctx *gin.Context) {
 		return
 	}
 
-	if user.IsAdmin != m.isAdmin && !user.IsAdmin {
+	if m.isAdmin && !user.IsAdmin {
 		helper.NewAbortResponse(ctx, "you don't have access for this action")
 		return
 	}
 
-	ctx.Set(constants.CtxAuthenticatedUserKey, user)
+	ctx.Set(constants.CtxAuthenticatedUserKey, user.UserID)
 	ctx.Next()
 }

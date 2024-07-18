@@ -8,7 +8,6 @@ import (
 )
 
 func (uc *categoryUsecase) Update(ctx context.Context, req request.CategoryRequest) (int, *models.Category, error) {
-
 	// find category
 	category, err := uc.categoryRepo.FindOneBy(map[string]interface{}{"id": req.ID})
 	if err != nil {

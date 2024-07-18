@@ -1,0 +1,1 @@
+ALTER TABLE `wallet`.`records` DROP COLUMN `note`;

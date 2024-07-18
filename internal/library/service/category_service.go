@@ -18,10 +18,10 @@ type categoryService struct {
 }
 
 func NewCategoryService(db *gorm.DB) CategoryRepo {
-	return categoryService{db}
+	return &categoryService{db}
 }
 
-func (svc categoryService) FindOneBy(criteria map[string]interface{}) (*models.Category, error) {
+func (svc *categoryService) FindOneBy(criteria map[string]interface{}) (*models.Category, error) {
 	m := &models.Category{}
 	result := svc.db.Where(criteria).First(&m)
 	if err := result.Error; err != nil {
@@ -31,7 +31,7 @@ func (svc categoryService) FindOneBy(criteria map[string]interface{}) (*models.C
 	return m, nil
 }
 
-func (svc categoryService) Create(models []*models.Category, tx *gorm.DB) ([]*models.Category, error) {
+func (svc *categoryService) Create(models []*models.Category, tx *gorm.DB) ([]*models.Category, error) {
 	err := tx.Create(models).Error
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (svc categoryService) Create(models []*models.Category, tx *gorm.DB) ([]*mo
 	return models, nil
 }
 
-func (svc categoryService) FindBy(criteria map[string]interface{}) ([]*models.Category, error) {
+func (svc *categoryService) FindBy(criteria map[string]interface{}) ([]*models.Category, error) {
 	m := []*models.Category{}
 	result := svc.db.Where(criteria).Find(&m)
 	if err := result.Error; err != nil {
@@ -50,7 +50,7 @@ func (svc categoryService) FindBy(criteria map[string]interface{}) ([]*models.Ca
 	return m, nil
 }
 
-func (svc categoryService) Update(model *models.Category, tx *gorm.DB) error {
+func (svc *categoryService) Update(model *models.Category, tx *gorm.DB) error {
 	err := tx.Save(&model).Error
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func (svc categoryService) Update(model *models.Category, tx *gorm.DB) error {
 	return nil
 }
 
-func (svc categoryService) Delete(models []*models.Category, tx *gorm.DB) error {
+func (svc *categoryService) Delete(models []*models.Category, tx *gorm.DB) error {
 	err := tx.Delete(&models, tx).Error
 	if err != nil {
 		return err

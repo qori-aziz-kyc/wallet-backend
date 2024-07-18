@@ -1,0 +1,1 @@
+ALTER TABLE `wallet`.`records` ADD COLUMN `note` TEXT AFTER `type`;

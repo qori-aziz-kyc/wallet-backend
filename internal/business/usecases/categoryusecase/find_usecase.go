@@ -8,7 +8,6 @@ import (
 )
 
 func (uc *categoryUsecase) Find(ctx context.Context, req request.CategoryRequest) (int, []*models.Category, error) {
-
 	criteria := make(map[string]interface{}, 0)
 	if len(req.CategoryID) > 0 {
 		criteria["id"] = req.CategoryID

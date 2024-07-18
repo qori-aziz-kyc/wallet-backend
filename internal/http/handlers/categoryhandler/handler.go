@@ -2,7 +2,7 @@ package categoryhandler
 
 import (
 	"github.com/gin-gonic/gin"
-	categoryusecase "github.com/qori-aziz-kyc/wallet-backend/internal/business/usecases/categoryUsecase"
+	"github.com/qori-aziz-kyc/wallet-backend/internal/business/usecases/categoryusecase"
 )
 
 type CategoryHandler interface {
